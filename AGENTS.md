@@ -15,10 +15,10 @@ Avoid placing generated output or dependencies in version control. Add tool-spec
 
 No build system or package manifest has been committed yet. When selecting the toolchain, expose a small, consistent command set and document it in `README.md`. Prefer commands with clear responsibilities, for example:
 
-- `npm run dev` starts the local development server.
-- `npm run build` creates a production artifact.
-- `npm test` runs the complete automated test suite.
-- `npm run lint` checks formatting and static-analysis rules.
+- `python src/manage.py runserver` starts the local development server.
+- `python src/manage.py migrate` applies database migrations.
+- `python src/manage.py test` runs the complete automated test suite.
+- `python src/manage.py check` checks the Django configuration.
 
 Do not commit code that depends on undocumented one-off setup steps.
 

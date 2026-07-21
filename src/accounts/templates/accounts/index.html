@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rejestracja i logowanie</title>
+  </head>
+  <body>
+    <main>
+      <h1>Rejestracja</h1>
+
+      <form id="registration-form">
+        {% csrf_token %}
+        <label for="email">E-mail</label>
+        <input id="email" name="email" type="email">
+
+        <label for="password">Hasło</label>
+        <input id="password" name="password" type="password">
+
+        <button type="submit">Utwórz konto</button>
+      </form>
+
+      <p id="result"></p>
+
+      <h1>Logowanie</h1>
+
+      <form id="login-form">
+        {% csrf_token %}
+        <label for="login-email">E-mail</label>
+        <input id="login-email" name="email" type="email">
+
+        <label for="login-password">Hasło</label>
+        <input id="login-password" name="password" type="password">
+
+        <button type="submit">Zaloguj się</button>
+      </form>
+
+      <p id="login-result"></p>
+    </main>
+
+    <script>
+      async function submitForm(form, url) {
+        return fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": form.csrfmiddlewaretoken.value,
+          },
+          body: JSON.stringify({
+            email: form.email.value,
+            password: form.password.value,
+          }),
+        });
+      }
+
+      const registrationForm = document.querySelector("#registration-form");
+      const registrationResult = document.querySelector("#result");
+      const loginForm = document.querySelector("#login-form");
+      const loginResult = document.querySelector("#login-result");
+
+      registrationForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const response = await submitForm(registrationForm, "/api/register");
+
+        registrationResult.textContent = response.ok
+          ? "Konto zostało utworzone."
+          : "Nie udało się utworzyć konta.";
+      });
+
+      loginForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const response = await submitForm(loginForm, "/api/login");
+
+        loginResult.textContent = response.ok
+          ? "Zalogowano."
+          : "Nieprawidłowy e-mail lub hasło.";
+      });
+    </script>
+  </body>
+</html>
