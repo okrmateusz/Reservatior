@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rejestracja</title>
+  </head>
+  <body>
+    <main>
+      <h1>Rejestracja</h1>
+
+      <form id="registration-form">
+        <label for="email">E-mail</label>
+        <input id="email" name="email" type="email">
+
+        <label for="password">Hasło</label>
+        <input id="password" name="password" type="password">
+
+        <button type="submit">Utwórz konto</button>
+      </form>
+
+      <p id="result"></p>
+    </main>
+
+    <script>
+      const form = document.querySelector("#registration-form");
+      const result = document.querySelector("#result");
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const response = await fetch("/api/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: form.email.value,
+            password: form.password.value,
+          }),
+        });
+
+        result.textContent = response.ok
+          ? "Konto zostało utworzone."
+          : "Nie udało się utworzyć konta.";
+      });
+    </script>
+  </body>
+</html>
