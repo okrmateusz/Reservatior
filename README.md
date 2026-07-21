@@ -1,53 +1,92 @@
 # Reservatior
 
-Prosta aplikacja Django udostępniająca rejestrację i logowanie użytkowników.
+Monorepo systemu rezerwacji. Obecnie zaimplementowany jest backend Django z
+rejestracją i logowaniem; pozostałe katalogi wyznaczają granice przyszłych
+aplikacji bez dodawania ich implementacji.
 
 ## Struktura
 
 ```text
 .
-├── src/                        # cały kod wykonywalny aplikacji
-│   ├── manage.py               # polecenia administracyjne Django
-│   ├── reservatior/            # konfiguracja całego projektu
-│   │   ├── settings.py         # ustawienia środowiska, bazy i middleware
-│   │   ├── urls.py             # główny routing
-│   │   ├── asgi.py             # punkt wejścia ASGI
-│   │   └── wsgi.py             # punkt wejścia WSGI/Gunicorn
-│   └── accounts/               # funkcjonalność kont użytkowników
-│       ├── migrations/         # przyszłe migracje modeli tej aplikacji
-│       ├── templates/accounts/ # szablony należące do accounts
-│       ├── apps.py             # konfiguracja aplikacji Django
-│       ├── urls.py             # routing rejestracji i logowania
-│       └── views.py            # widoki i endpointy JSON
-├── tests/                      # testy odzwierciedlające moduły z src/
-│   └── test_accounts.py        # testy rejestracji i logowania
-├── requirements.txt            # zależności Pythona
-└── .env.example                # przykładowa konfiguracja lokalna
+├── apps/
+│   ├── web/
+│   │   ├── business-panel/       # przyszły panel firmowy
+│   │   └── booking-portal/       # przyszły portal rezerwacyjny
+│   └── mobile/                   # przyszła aplikacja mobilna
+├── backend/
+│   ├── manage.py                 # polecenia administracyjne Django
+│   ├── config/                   # ustawienia, routing oraz WSGI/ASGI
+│   ├── apps/
+│   │   ├── accounts/             # działająca rejestracja i logowanie
+│   │   ├── organizations/        # przyszłe moduły domenowe
+│   │   ├── employees/
+│   │   ├── customers/
+│   │   ├── services/
+│   │   ├── schedules/
+│   │   ├── bookings/
+│   │   ├── notifications/
+│   │   ├── payments/
+│   │   └── subscriptions/
+│   └── requirements/
+│       ├── base.txt              # wspólne zależności Pythona
+│       └── production.txt        # zależności produkcyjne
+├── infrastructure/
+│   ├── docker/Dockerfile         # obraz backendu
+│   └── scripts/entrypoint.sh     # migracje przed startem aplikacji
+├── docker-compose.yml            # lokalny backend i PostgreSQL
+├── .env.example
+└── README.md
 ```
 
-`reservatior` konfiguruje projekt, natomiast `accounts` zawiera konkretną
-funkcjonalność. Nowe funkcje domenowe powinny trafiać do osobnych aplikacji
-Django obok `accounts` w katalogu `src/`.
+Katalogi oznaczone jako przyszłe są celowo puste. Nie są jeszcze aplikacjami
+Django i nie są dodane do `INSTALLED_APPS`.
 
-## Uruchomienie lokalne
-
-Skopiuj `.env.example` do `.env`, a następnie wykonaj:
+## Uruchomienie przez Docker
 
 ```powershell
-python src/manage.py migrate
-python src/manage.py runserver
+docker compose up --build
 ```
 
-Testy i kontrola konfiguracji:
+Aplikacja będzie dostępna pod `http://127.0.0.1:8000`. Migracje Django są
+wykonywane automatycznie przez `infrastructure/scripts/entrypoint.sh`.
 
 ```powershell
-python src/manage.py check
-python src/manage.py test
+docker compose down
 ```
 
-## Render
+## Uruchomienie bez Dockera
+
+Zainstaluj zależności i skonfiguruj `.env` na podstawie `.env.example`:
+
+```powershell
+python -m pip install -r backend/requirements/base.txt
+Set-Location backend
+python manage.py migrate
+python manage.py runserver
+```
+
+Testy i kontrola konfiguracji uruchamiane z katalogu `backend/`:
+
+```powershell
+python manage.py check
+python manage.py test
+```
+
+## Render z Dockerem
+
+Utwórz Docker Web Service i ustaw:
 
 ```text
-Build Command: pip install -r requirements.txt && python src/manage.py migrate
-Start Command: python -m gunicorn --chdir src reservatior.wsgi:application
+Dockerfile Path: infrastructure/docker/Dockerfile
+Health Check Path: /
 ```
+
+Wymagane zmienne środowiskowe:
+
+```text
+DATABASE_URL=<Internal Database URL z Render PostgreSQL>
+SESSION_SECRET=<wygenerowany sekret>
+DJANGO_DEBUG=false
+```
+
+Kontener korzysta z `PORT` przekazanego automatycznie przez Render.

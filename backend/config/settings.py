@@ -22,7 +22,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "accounts.apps.AccountsConfig",
+    "apps.accounts.apps.AccountsConfig",
 ]
 
 MIDDLEWARE = [
@@ -35,7 +35,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "reservatior.urls"
+ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
     {
@@ -52,7 +52,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "reservatior.wsgi.application"
+WSGI_APPLICATION = "config.wsgi.application"
 
 
 def database_config(database_url):

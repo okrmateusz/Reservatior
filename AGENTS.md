@@ -2,23 +2,23 @@
 
 ## Project Structure & Module Organization
 
-This repository is currently an empty scaffold. Keep the root focused on project-wide configuration and documentation. As implementation is added, use a predictable layout:
+This repository is a monorepo. Keep the root focused on workspace-wide configuration and documentation:
 
-- `src/` for application code, grouped by feature or domain.
-- `tests/` for automated tests that mirror the structure under `src/`.
-- `assets/` for static files such as images, fixtures, and templates.
-- `docs/` for architecture notes and longer operational guidance.
+- `apps/` contains web and mobile clients.
+- `backend/` contains the Django project and domain applications.
+- `backend/apps/` groups Django applications by domain.
+- `infrastructure/` contains Docker definitions and operational scripts.
 
 Avoid placing generated output or dependencies in version control. Add tool-specific directories such as `dist/`, `coverage/`, and dependency caches to `.gitignore`.
 
 ## Build, Test, and Development Commands
 
-No build system or package manifest has been committed yet. When selecting the toolchain, expose a small, consistent command set and document it in `README.md`. Prefer commands with clear responsibilities, for example:
+Use the commands documented in `README.md`:
 
-- `python src/manage.py runserver` starts the local development server.
-- `python src/manage.py migrate` applies database migrations.
-- `python src/manage.py test` runs the complete automated test suite.
-- `python src/manage.py check` checks the Django configuration.
+- `docker compose up --build` starts Django and PostgreSQL.
+- `python backend/manage.py migrate` applies database migrations.
+- Run `python manage.py test` from `backend/` to execute the test suite.
+- Run `python manage.py check` from `backend/` to check Django configuration.
 
 Do not commit code that depends on undocumented one-off setup steps.
 
@@ -44,30 +44,29 @@ Never commit secrets or local environment files. Provide sanitized examples such
 
 ## Project Structure & Module Organization
 
-Application code lives in `app/`. `app/main.py` defines FastAPI routes, while `mail.py`, `calendar.py`, and `config.py` isolate integrations and settings. Server-rendered Jinja templates are under `app/templates/`. Tests live in `tests/` and generally mirror application areas, for example `tests/test_mail.py`. Database documentation and the baseline PostgreSQL schema are in `DATABASE.md` and `db/init.sql`. Operational utilities belong in `scripts/`; runtime data and logs belong in `data/` and `logs/` and should not be committed.
+Backend code lives in `backend/`. `backend/config/` contains project-wide Django configuration, while domain applications live under `backend/apps/`. Keep templates within the owning Django application. Frontend and mobile clients live under the root `apps/` directory. Docker definitions and operational scripts belong in `infrastructure/`.
 
 ## Build, Test, and Development Commands
 
-Use Docker Compose for all development tasks; a host Python environment is not required.
+Docker Compose is the default development workflow; a host Python environment is optional.
 
-- `docker compose up --build` builds and runs the app and PostgreSQL at `http://127.0.0.1:8010`.
+- `docker compose up --build` builds and runs Django and PostgreSQL at `http://127.0.0.1:8000`.
 - `docker compose up --build -d` starts the stack in the background.
-- `docker compose logs -f mail-client` follows application logs.
-- `docker compose run --rm mail-client python -m pytest` runs the complete test suite in a container.
-- `docker compose run --rm mail-client python scripts/smtp_check.py [recipient@example.com]` checks SMTP and optionally sends a test message.
+- `docker compose logs -f backend` follows application logs.
+- `docker compose exec backend python backend/manage.py test` runs the test suite.
 - `docker compose down` stops the stack without deleting PostgreSQL data.
 
 ## Coding Style & Naming Conventions
 
-Use Python 3 conventions: four-space indentation, type hints for service boundaries and data objects, `snake_case` for functions and modules, and `PascalCase` for classes. Keep route handlers thin and move mail, calendar, configuration, or database logic into focused modules. Follow the existing import grouping (standard library, third-party, local) and keep templates named after their route purpose. No formatter or linter is currently configured; write PEP 8-compatible code and avoid unrelated formatting changes.
+Use Python 3 conventions: four-space indentation, type hints for service boundaries and data objects, `snake_case` for functions and modules, and `PascalCase` for classes. Keep Django views thin and move domain logic into the owning application when needed. Follow the existing import grouping (standard library, third-party, local) and namespace templates by application. No formatter or linter is currently configured; write PEP 8-compatible code and avoid unrelated formatting changes.
 
 ## Testing Guidelines
 
-Tests use pytest and FastAPI's `TestClient`. Name files `test_<area>.py` and tests `test_<behavior>()`. Mock external IMAP, SMTP, Google, and database interactions; tests must not depend on real credentials or network access. Add regression tests with every behavior change. Run `docker compose run --rm mail-client python -m pytest` before submitting work.
+Tests use Django's test framework and live with the owning Django application. Name tests after the behavior they verify. Mock external integrations; tests must not depend on real credentials or network access. Add regression tests with every behavior change. Run `python manage.py test` from `backend/` before submitting work.
 
 ## Database Schema Changes
 
-Do not create incremental migrations. Keep the complete PostgreSQL schema in `db/init.sql`. After every schema change, reset the local database with `docker compose down -v`, then rebuild it with `docker compose up --build`. The reset permanently removes local database contents, so confirm that no development data must be preserved before running it.
+Use Django migrations for schema changes. Store each migration in the owning application's `migrations/` package. Run `python manage.py makemigrations` and `python manage.py migrate`, then include the generated migration with the model change.
 
 ## Commit & Pull Request Guidelines
 
@@ -75,7 +74,7 @@ Use Conventional Commits with lowercase types and imperative, concise descriptio
 
 ## Security & Configuration
 
-Copy `.env.example` to `.env`; never commit `.env`, OAuth tokens, client secrets, mail credentials, or generated logs. Use strong PostgreSQL passwords outside local development and retain Google Calendar's read-only scope unless a change is explicitly reviewed.
+Copy `.env.example` to `.env`; never commit `.env`, client secrets, database credentials, or generated logs. Use strong PostgreSQL passwords and a unique `SESSION_SECRET` outside local development.
 
 
 ## Working philosophy
