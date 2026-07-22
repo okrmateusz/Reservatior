@@ -1,14 +1,17 @@
 import json
 
 from django.contrib.auth import authenticate, get_user_model, login
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from django.db import IntegrityError
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.middleware.csrf import get_token
 from django.views.decorators.http import require_POST
 
 
-def index(request):
-    return render(request, "accounts/index.html")
+def csrf_token(request):
+    return JsonResponse({"csrfToken": get_token(request)})
 
 
 def request_data(request):
@@ -23,7 +26,23 @@ def register(request):
     data = request_data(request)
     email = str(data.get("email", "")).strip().lower()
     password = str(data.get("password", ""))
+    password_confirmation = str(data.get("passwordConfirmation", ""))
+
+    try:
+        validate_email(email)
+    except ValidationError:
+        return JsonResponse({"error": "Podaj poprawny adres e-mail."}, status=400)
+
+    if password != password_confirmation:
+        return JsonResponse({"error": "Hasła nie są takie same."}, status=400)
+
     user_model = get_user_model()
+    user_candidate = user_model(username=email, email=email)
+
+    try:
+        validate_password(password, user=user_candidate)
+    except ValidationError as error:
+        return JsonResponse({"error": " ".join(error.messages)}, status=400)
 
     try:
         user = user_model.objects.create_user(

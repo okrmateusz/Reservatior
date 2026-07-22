@@ -10,11 +10,14 @@ load_dotenv(BASE_DIR / ".env")
 
 SECRET_KEY = os.environ["SESSION_SECRET"]
 DEBUG = os.getenv("DJANGO_DEBUG", "false").lower() == "true"
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", "backend"]
 RENDER_EXTERNAL_HOSTNAME = os.getenv("RENDER_EXTERNAL_HOSTNAME")
+FRONTEND_URL = os.getenv("FRONTEND_URL")
 
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+
+CSRF_TRUSTED_ORIGINS = [FRONTEND_URL] if FRONTEND_URL else []
 
 INSTALLED_APPS = [
     "django.contrib.auth",
@@ -80,7 +83,20 @@ def database_config(database_url):
 
 DATABASES = {"default": database_config(os.environ["DATABASE_URL"])}
 
-AUTH_PASSWORD_VALIDATORS = []
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+    },
+]
 
 LANGUAGE_CODE = "pl"
 TIME_ZONE = "Europe/Warsaw"

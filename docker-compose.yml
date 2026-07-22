@@ -21,11 +21,30 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-reservatior}:${POSTGRES_PASSWORD:-reservatior}@db:5432/${POSTGRES_DB:-reservatior}
       SESSION_SECRET: ${SESSION_SECRET:-local-development-secret}
       DJANGO_DEBUG: ${DJANGO_DEBUG:-true}
+      FRONTEND_URL: http://localhost:3000
       PORT: 8000
     ports:
       - "8000:8000"
     depends_on:
       db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/web.Dockerfile
+    environment:
+      BACKEND_URL: http://backend:8000
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
         condition: service_healthy
 
 volumes:

@@ -15,7 +15,7 @@ Avoid placing generated output or dependencies in version control. Add tool-spec
 
 Use the commands documented in `README.md`:
 
-- `docker compose up --build` starts Django and PostgreSQL.
+- `docker compose up --build` starts Next.js, Django, and PostgreSQL.
 - `python backend/manage.py migrate` applies database migrations.
 - Run `python manage.py test` from `backend/` to execute the test suite.
 - Run `python manage.py check` from `backend/` to check Django configuration.
@@ -44,25 +44,26 @@ Never commit secrets or local environment files. Provide sanitized examples such
 
 ## Project Structure & Module Organization
 
-Backend code lives in `backend/`. `backend/config/` contains project-wide Django configuration, while domain applications live under `backend/apps/`. Keep templates within the owning Django application. Frontend and mobile clients live under the root `apps/` directory. Docker definitions and operational scripts belong in `infrastructure/`.
+Backend code lives in `backend/`. `backend/config/` contains project-wide Django configuration, while domain applications live under `backend/apps/`. Web views live under `apps/web/`, and mobile clients live under `apps/mobile/`. Docker definitions and operational scripts belong in `infrastructure/`.
 
 ## Build, Test, and Development Commands
 
-Docker Compose is the default development workflow; a host Python environment is optional.
+Docker Compose is the default development workflow; host Python and Node.js environments are optional.
 
-- `docker compose up --build` builds and runs Django and PostgreSQL at `http://127.0.0.1:8000`.
+- `docker compose up --build` runs Next.js at `http://127.0.0.1:3000` and Django at `http://127.0.0.1:8000`.
 - `docker compose up --build -d` starts the stack in the background.
 - `docker compose logs -f backend` follows application logs.
+- `docker compose logs -f web` follows frontend logs.
 - `docker compose exec backend python backend/manage.py test` runs the test suite.
 - `docker compose down` stops the stack without deleting PostgreSQL data.
 
 ## Coding Style & Naming Conventions
 
-Use Python 3 conventions: four-space indentation, type hints for service boundaries and data objects, `snake_case` for functions and modules, and `PascalCase` for classes. Keep Django views thin and move domain logic into the owning application when needed. Follow the existing import grouping (standard library, third-party, local) and namespace templates by application. No formatter or linter is currently configured; write PEP 8-compatible code and avoid unrelated formatting changes.
+Use Python 3 conventions in the backend: four-space indentation, type hints for service boundaries and data objects, `snake_case` for functions and modules, and `PascalCase` for classes. Keep Django views thin and move domain logic into the owning application when needed. In the Next.js frontend, use TypeScript, functional components, and App Router conventions. Follow the committed ESLint configuration and avoid unrelated formatting changes.
 
 ## Testing Guidelines
 
-Tests use Django's test framework and live with the owning Django application. Name tests after the behavior they verify. Mock external integrations; tests must not depend on real credentials or network access. Add regression tests with every behavior change. Run `python manage.py test` from `backend/` before submitting work.
+Backend tests use Django's test framework with pytest-django and all live in `backend/tests/`, grouped by behavior. Name files `test_<behavior>.py` and tests after the scenario they verify. Mock external integrations; tests must not depend on real credentials or network access. Add regression tests with every behavior change. Run `python -m pytest` from the repository root, plus `npm run lint` and `npm run build` from `apps/web/business-panel/`, before submitting work.
 
 ## Database Schema Changes
 

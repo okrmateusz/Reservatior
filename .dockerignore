@@ -1,7 +1,16 @@
 .git
 .venv
+**/.venv
 __pycache__
+**/__pycache__
 *.py[cod]
+**/*.py[cod]
 .env
 .pytest_cache
 db.sqlite3
+node_modules
+**/node_modules
+.next
+**/.next
+out
+**/out

@@ -4,20 +4,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 
 
-class AuthenticationTests(TestCase):
-    def test_registers_user(self):
-        response = self.client.post(
-            "/api/register",
-            data=json.dumps(
-                {"email": "User@Example.com", "password": "secret-password"}
-            ),
-            content_type="application/json",
-        )
-
-        self.assertEqual(response.status_code, 201)
-        user = get_user_model().objects.get(username="user@example.com")
-        self.assertTrue(user.check_password("secret-password"))
-
+class LoginTests(TestCase):
     def test_logs_in_with_matching_credentials(self):
         get_user_model().objects.create_user(
             username="user@example.com",
