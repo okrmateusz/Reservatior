@@ -27,6 +27,8 @@ async function getCsrfToken(): Promise<string> {
 async function submitCredentials(endpoint: string, form: HTMLFormElement) {
   const data = new FormData(form);
   const csrfToken = await getCsrfToken();
+  const firstName = data.get("firstName");
+  const lastName = data.get("lastName");
   const passwordConfirmation = data.get("passwordConfirmation");
 
   return fetch(endpoint, {
@@ -37,6 +39,8 @@ async function submitCredentials(endpoint: string, form: HTMLFormElement) {
       "X-CSRFToken": csrfToken,
     },
     body: JSON.stringify({
+      ...(firstName !== null && { firstName }),
+      ...(lastName !== null && { lastName }),
       email: data.get("email"),
       password: data.get("password"),
       ...(passwordConfirmation !== null && { passwordConfirmation }),
@@ -108,6 +112,24 @@ export default function Home() {
         <div className="forms">
           <form onSubmit={register}>
             <h2>Rejestracja</h2>
+
+            <label htmlFor="registration-first-name">Imię</label>
+            <input
+              id="registration-first-name"
+              maxLength={150}
+              name="firstName"
+              required
+              type="text"
+            />
+
+            <label htmlFor="registration-last-name">Nazwisko</label>
+            <input
+              id="registration-last-name"
+              maxLength={150}
+              name="lastName"
+              required
+              type="text"
+            />
 
             <label htmlFor="registration-email">E-mail</label>
             <input id="registration-email" name="email" type="email" />

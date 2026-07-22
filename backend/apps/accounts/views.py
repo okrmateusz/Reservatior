@@ -24,9 +24,20 @@ def request_data(request):
 @require_POST
 def register(request):
     data = request_data(request)
+    first_name = str(data.get("firstName", "")).strip()
+    last_name = str(data.get("lastName", "")).strip()
     email = str(data.get("email", "")).strip().lower()
     password = str(data.get("password", ""))
     password_confirmation = str(data.get("passwordConfirmation", ""))
+
+    if not first_name or not last_name:
+        return JsonResponse({"error": "Podaj imię i nazwisko."}, status=400)
+
+    if len(first_name) > 150 or len(last_name) > 150:
+        return JsonResponse(
+            {"error": "Imię i nazwisko mogą mieć maksymalnie 150 znaków."},
+            status=400,
+        )
 
     try:
         validate_email(email)
@@ -48,6 +59,8 @@ def register(request):
         user = user_model.objects.create_user(
             username=email,
             email=email,
+            first_name=first_name,
+            last_name=last_name,
             password=password,
         )
     except (IntegrityError, ValueError):
